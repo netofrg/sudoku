@@ -38,12 +38,51 @@ public class Board {
                 .anyMatch(s -> nonNull(s.getActual()) && !s.getActual().equals(s.getExpected()));
     }
 
+    /**
+     * Verifica se a jogada é válida de acordo com as regras do Sudoku.
+     *
+     * @param row   A linha onde o número será inserido.
+     * @param col   A coluna onde o número será inserido.
+     * @param value O número a ser inserido.
+     * @return true se a jogada for válida, false caso contrário.
+     */
+    public boolean isValidMove(final int row, final int col, final int value) {
+        // Verifica a linha
+        for (int i = 0; i < 9; i++) {
+            if (i != col && nonNull(this.spaces.get(row).get(i).getActual()) && this.spaces.get(row).get(i).getActual().equals(value)) {
+                return false;
+            }
+        }
+
+        // Verifica a coluna
+        for (int i = 0; i < 9; i++) {
+            if (i != row && nonNull(this.spaces.get(i).get(col).getActual()) && this.spaces.get(i).get(col).getActual().equals(value)) {
+                return false;
+            }
+        }
+
+        // Verifica a sub-grade 3x3
+        int startRow = row - row % 3;
+        int startCol = col - col % 3;
+        for (int i = 0; i < 3; i++) {
+            for (int j = 0; j < 3; j++) {
+                int currRow = startRow + i;
+                int currCol = startCol + j;
+                if (currRow != row || currCol != col) { // Certifica-se de não verificar a própria célula
+                    if (nonNull(this.spaces.get(currRow).get(currCol).getActual()) && this.spaces.get(currRow).get(currCol).getActual().equals(value)) {
+                        return false;
+                    }
+                }
+            }
+        }
+        return true;
+    }
+
     public boolean changeValue(final int col, final int row, final int value){
         var space = spaces.get(col).get(row);
         if (space.isFixed()){
             return false;
         }
-
         space.setActual(value);
         return true;
     }
@@ -53,7 +92,6 @@ public class Board {
         if (space.isFixed()){
             return false;
         }
-
         space.clearSpace();
         return true;
     }
@@ -65,5 +103,4 @@ public class Board {
     public boolean gameIsFinished(){
         return !hasErrors() && getStatus().equals(COMPLETE);
     }
-
 }
